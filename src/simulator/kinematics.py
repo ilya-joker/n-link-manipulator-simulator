@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def rotation_matrix(angle_deg):
     Tetta = np.radians(angle_deg)
     T = np.array([
@@ -27,3 +28,42 @@ def forward_kinematics(link_lengths, angles_deg):
         y_coordinates = T_total[1, 2]
         points.append((x_coordinates,y_coordinates))
     return points
+
+
+def jacobian(link_lengths, angles_deg):
+    n = len(link_lengths)
+    J = np.zeros((2, n))  # матрица 2×n
+
+    # для каждого сустава i считаем столбец якобиана
+    for i in range(n):
+        # суммируем вклад всех звеньев от i до конца
+        for k in range(i, n):
+            cumulative_angle = sum(angles_deg[:k + 1])
+            J[0, i] += -link_lengths[k]*np.sin(np.radians(cumulative_angle))  # dx/dθᵢ
+            J[1, i] += link_lengths[k]*np.cos(np.radians(cumulative_angle))  # dy/dθᵢ
+
+    return J
+
+def inverse_kinematics(link_lengths, angles_deg, target, max_iterations=1000, tolerance=1e-3):
+    angles_deg = np.array(angles_deg, dtype=float)
+    points = forward_kinematics(link_lengths, angles_deg)
+    for i in range(max_iterations):
+        target_x, target_y = target[0], target[1]
+        current_x, current_y = points[-1]
+        error = (target_x - current_x, target_y - current_y)
+        if np.linalg.norm(error) < tolerance:
+            break
+        # считаем Якобиан
+        J = jacobian(link_lengths, angles_deg)
+
+        # считаем изменение углов через псевдообратную матрицу
+        delta_theta = np.linalg.pinv(J) @ np.array(error)
+
+        # обновляем углы (delta_theta в радианах — переводим в градусы)
+        angles_deg = angles_deg + np.degrees(delta_theta)
+
+        # пересчитываем позицию для следующей итерации
+        points = forward_kinematics(link_lengths, angles_deg)
+
+    return angles_deg  # возвращаем найденные углы
+
