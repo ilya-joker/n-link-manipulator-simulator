@@ -1,10 +1,11 @@
 from matplotlib import pyplot as plt
 
 
-def draw_manipulator(points):
+def draw_manipulator(points, target=None):
     # Create figure and axes objects
     fig, ax = plt.subplots(figsize=(8, 8))
-
+    if target is not None:
+        ax.plot(target[0], target[1], "g*", markersize=15, label="Target")
     # Start from the origin (0, 0) and add all joint positions
     X = [0]
     Y = [0]
@@ -34,5 +35,6 @@ def draw_manipulator(points):
     ax.set_title("N-Link Manipulator")
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
+
 
     plt.show()
