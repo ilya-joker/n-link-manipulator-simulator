@@ -45,7 +45,7 @@ def jacobian(link_lengths, angles_deg):
     return J
 
 def inverse_kinematics(link_lengths, angles_deg, target, max_iterations=1000, tolerance=1e-3):
-    angles_deg = np.array(angles_deg, dtype=float)
+    angles_deg = np.array(angles_deg, dtype=float) #current position of manipulator
     points = forward_kinematics(link_lengths, angles_deg)
     for i in range(max_iterations):
         target_x, target_y = target[0], target[1]
@@ -67,3 +67,4 @@ def inverse_kinematics(link_lengths, angles_deg, target, max_iterations=1000, to
 
     return angles_deg  # возвращаем найденные углы
 
+print(inverse_kinematics([1, 1, 1], [0, 0, 0], (3, 0), max_iterations=1000, tolerance=1e-3))
